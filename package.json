@@ -13,6 +13,8 @@
     "cors": "^2.8.5",
     "dotenv": "^10.0.0",
     "express": "^4.17.1",
-    "mongoose": "^5.12.15"
+    "mongoose": "^5.12.15",
+    "mongoose-type-email": "^1.1.2",
+    "mongoose-type-url": "^2.1.0"
   }
 }
