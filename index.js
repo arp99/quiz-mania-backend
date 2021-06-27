@@ -4,6 +4,9 @@ const cors = require('cors')
 require('dotenv').config()
 const { connectToDatabase } = require('./Config/db.connection')
 
+const loginRouter = require('./Routers/login.router')
+const signupRouter = require('./Routers/signup.router')
+
 const PORT = process.env.PORT || 5500
 
 const app = express()
@@ -16,9 +19,20 @@ app.use(cors())
 
 connectToDatabase()
 
+app.use( '/api/login' , loginRouter )
+app.use( '/api/signup' , signupRouter )
+
 app.get("/",(req , res)=>{
     res.json("Hello from other side");
 })
+
+app.use((req, res) => {
+    res.status(404).json({ success: false, message: 'Not Found!' });
+});
+  
+app.use((err, req, res, next) => {
+    res.status(500).json({ success: false, message: 'Error occurred on server side!', errMessage: err.message });
+});
 
 app.listen(PORT , ()=>{
     console.log(`Server connected successfully at Port: ${PORT}`);
