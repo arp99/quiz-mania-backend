@@ -12,7 +12,7 @@ const getQuizes = async ( req , res ) => {
 const getQuizById = async ( req , res ) => {
     try{
         
-        const { quizId } = req.body ;
+        const { quizId } = req.params ;
         const quiz = await Quiz.find({ _id : quizId });
         res.json({ success : true , message : "Successfully fetched Quiz" , quizData : quiz })
 
