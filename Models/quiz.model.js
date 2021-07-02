@@ -42,7 +42,7 @@ const quizSchema = new Schema ({
         required : [ true , 'Quiz description cannot be empty' ]
     },
     imageUrl : {
-        type : mongoose.SchemaTypes.Url,
+        type : String,
         required : [ true , 'Quiz image is required' ]        
     },
     playTime : {
