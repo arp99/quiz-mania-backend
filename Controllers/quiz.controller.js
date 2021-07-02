@@ -3,7 +3,7 @@ const { Quiz } = require( '../Models/quiz.model' )
 const getQuizes = async ( req , res ) => {
     try{
         const quizes = await Quiz.find({ }).select('_id name description imageUrl');
-        res.json({ success: true , message : "Quizes fetched successfully" , quizes });
+        res.json({ success: true , message : "Quizes fetched successfully" , quizData : quizes });
     }catch(err){
         res.json({ success : false , message : "Error fetching quizes!" , errorMessage: err.message });
     }
