@@ -6,6 +6,8 @@ const { connectToDatabase } = require('./Config/db.connection')
 
 const loginRouter = require('./Routers/login.router')
 const signupRouter = require('./Routers/signup.router')
+const quizRouter = require('./Routers/quiz.router')
+const userRouter = require('./Routers/user.router')
 
 const PORT = process.env.PORT || 5500
 
@@ -21,6 +23,8 @@ connectToDatabase()
 
 app.use( '/api/login' , loginRouter )
 app.use( '/api/signup' , signupRouter )
+app.use( '/api/quizes' , quizRouter )
+app.use( '/api/user' , userRouter )
 
 app.get("/",(req , res)=>{
     res.json("Hello from other side");
