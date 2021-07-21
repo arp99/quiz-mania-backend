@@ -18,6 +18,17 @@ const userSchema = new Schema({
     password : {
         type: String ,
         required : [ true , 'Password cannot be empty' ]
+    },
+    attemptedQuiz : {
+        type : [ 
+            { 
+                quizId: { 
+                    type: mongoose.Types.ObjectId, 
+                    ref : "Quiz" 
+                }, 
+                score : Number 
+            }
+        ]
     }
 })
 
