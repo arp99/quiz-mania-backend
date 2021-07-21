@@ -18,4 +18,38 @@ const getAllUserNames = async ( req , res ) => {
         res.json({ success : false , message : "Error fecthing all user names" , errorMessage : err.message })
     }
 }
-module.exports = { getUserData, getAllUserNames }
+
+const saveQuizResults = async ( req , res ) =>{
+    try{
+        const { quizId , score } = req.body
+        const { userId } = req.user
+        console.log({ quizId , score, userId })
+        
+        const isAttempted = await User.find({ _id : userId }).select('attemptedQuiz')
+        if(isAttempted[0].attemptedQuiz.length === 0){
+            await User.updateOne({ _id : userId } , {attemptedQuiz : [{ quizId , score }]} , { upsert : true })
+        }else{
+            const attemptedQuizes = isAttempted[0].attemptedQuiz;
+            const newScore = score
+
+            User.findOne({ _id : userId })
+            .then( user => {
+                const quizIndex = attemptedQuizes.map(quiz => quiz.quizId).indexOf(quizId);
+                if( quizIndex !== -1 ){
+                    user.attemptedQuiz[quizIndex].score = newScore;
+                    user.save();
+                }else{
+                    user.attemptedQuiz.push({ quizId , score })
+                    user.save()
+                }
+             })
+             .catch(err => { throw err })
+             
+        }   
+        res.json({ success : true , message : "Results received" })        
+    }catch(err){
+        res.json({ success : false , message : "Error saving quiz results", errorMessage : err.message })
+    }
+} 
+
+module.exports = { getUserData, getAllUserNames, saveQuizResults }
