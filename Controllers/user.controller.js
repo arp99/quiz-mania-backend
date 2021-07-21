@@ -3,7 +3,16 @@ const { User } = require('../Models/user.model')
 const getUserData = async ( req , res ) => {
     try{
         const { userId } = req.user;//comes from the auth Middleware
-        const userData = await User.findOne({ _id : userId }).select('firstName lastName email')
+        const userData = await User.findOne({ _id : userId })
+                        .select('firstName lastName email attemptedQuiz')
+                        .populate({ 
+                            path:"attemptedQuiz", 
+                            populate : {
+                                path : "quizId",
+                                select : { _id : 1 , name : 1 , imageUrl : 1}
+                            }
+                        })
+
         res.json({ success : true , message : "User Data fetched successfully!" , userData })
     }catch(err){
         res.json({ success : false , message : "Error in fetching user data" , errorMessage : err.message })
@@ -12,7 +21,15 @@ const getUserData = async ( req , res ) => {
 
 const getAllUserNames = async ( req , res ) => {
     try{
-        const usersData = await User.find({}).select('firstName lastName ')
+        const usersData = await User.find({})
+                        .select('firstName lastName attemptedQuiz')
+                        .populate({ 
+                            path:"attemptedQuiz", 
+                            populate : {
+                                path : "quizId",
+                                select : { _id : 1 , name : 1}
+                            }
+                        })
         res.json({ success : true , message : "Fetched all users data" , usersData })
     }catch(err){
         res.json({ success : false , message : "Error fecthing all user names" , errorMessage : err.message })
