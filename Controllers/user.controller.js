@@ -69,4 +69,40 @@ const saveQuizResults = async ( req , res ) =>{
     }
 } 
 
-module.exports = { getUserData, getAllUserNames, saveQuizResults }
+const getLeaderBoardForQuiz = async ( req, res ) => {
+    try{
+        const { userId } = req.user
+        const { quizId } = req.body
+        const AllUsersData = await User.find({})
+                        .select('firstName lastName attemptedQuiz')
+                        .populate({ 
+                            path:"attemptedQuiz", 
+                            populate : {
+                                path : "quizId",
+                                select : { _id : 1 , name : 1}
+                            }
+                        })
+        const usersAttempted = AllUsersData.filter( user => {
+            
+            const foundQuiz = user.attemptedQuiz.filter( quiz => quiz.quizId._id.toString() ===  quizId )
+            if(foundQuiz.length > 0){
+                return user
+            }
+        })
+        const modifiedUserData = usersAttempted.map(user => {
+            return {
+                firstName : user.firstName,
+                lastName : user.lastName,
+                quizName : user.attemptedQuiz[0].quizId.name,
+                score : user.attemptedQuiz[0].score
+            }
+        })
+        const leaderBoard = modifiedUserData.slice().sort(( user1, user2 ) => user2.score - user1.score ).slice(0,5)
+        res.json({ success : true, message : "Successfully fetched leaderboard", leaderBoard })
+
+    }catch( err ){
+        res.status(500).json({ success : false, message : "Error fecthing leaderboard", errorMessage : err.message })
+    }
+}
+
+module.exports = { getUserData, getAllUserNames, saveQuizResults, getLeaderBoardForQuiz }
