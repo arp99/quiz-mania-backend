@@ -72,7 +72,7 @@ const saveQuizResults = async ( req , res ) =>{
 const getLeaderBoardForQuiz = async ( req, res ) => {
     try{
         const { userId } = req.user
-        const { quizId } = req.body
+        const { quizId } = req.query
         const AllUsersData = await User.find({})
                         .select('firstName lastName attemptedQuiz')
                         .populate({ 
