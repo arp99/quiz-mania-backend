@@ -1,17 +1,10 @@
 const { User } = require('../Models/user.model')
+const { Quiz } = require('../Models/quiz.model')
 
-const getLeaderBoard = async ( quizId ) => {
-    const AllUsersData = await User.find({})
-    .select('firstName lastName attemptedQuiz')
-    .populate({ 
-        path:"attemptedQuiz", 
-        populate : {
-            path : "quizId",
-        }
-    })
-
+const getLeaderBoard = ( quizId, userData ) => {
+    
     const usersAttempted = []
-    AllUsersData.forEach( user => {
+    userData.forEach( user => {
         user.attemptedQuiz.forEach( quiz => {
             if( quiz.quizId._id.toString() ===  quizId ){
                 usersAttempted.push( {
@@ -39,8 +32,24 @@ const getUserData = async ( req , res ) => {
                                 select : { _id : 1 , name : 1 , imageUrl : 1}
                             }
                         })
+        
+        const AllUsersData = await User.find({})
+            .select('firstName lastName attemptedQuiz')
+            .populate({ 
+                path:"attemptedQuiz", 
+                populate : {
+                    path : "quizId",
+                }
+            })
+        
+        const quizes = await Quiz.find({ }).select('_id name description imageUrl');
+        
+        const allLeaderBoard = {}
+        quizes.forEach( quiz => {
+            allLeaderBoard[quiz._id] = getLeaderBoard( quiz._id.toString(), AllUsersData )
+        })
 
-        res.json({ success : true , message : "User Data fetched successfully!" , userData })
+        res.json({ success : true , message : "User Data fetched successfully!" , userData, allLeaderBoard })
     }catch(err){
         res.json({ success : false , message : "Error in fetching user data" , errorMessage : err.message })
     }
@@ -100,7 +109,15 @@ const getLeaderBoardForQuiz = async ( req, res ) => {
     try{
         const { userId } = req.user
         const { quizId } = req.query
-        const leaderBoard = await getLeaderBoard( quizId )
+        const AllUsersData = await User.find({})
+        .select('firstName lastName attemptedQuiz')
+        .populate({ 
+            path:"attemptedQuiz", 
+            populate : {
+                path : "quizId",
+            }
+        })
+        const leaderBoard = getLeaderBoard( quizId, AllUsersData )
         res.json({ success : true, message : "Successfully fetched leaderboard", leaderBoard })
 
     }catch( err ){
