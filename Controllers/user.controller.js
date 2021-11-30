@@ -79,25 +79,23 @@ const getLeaderBoardForQuiz = async ( req, res ) => {
                             path:"attemptedQuiz", 
                             populate : {
                                 path : "quizId",
-                                select : { _id : 1 , name : 1}
                             }
                         })
-        const usersAttempted = AllUsersData.filter( user => {
-            
-            const foundQuiz = user.attemptedQuiz.filter( quiz => quiz.quizId._id.toString() ===  quizId )
-            if(foundQuiz.length > 0){
-                return user
-            }
+        
+        const usersAttempted = []
+        AllUsersData.forEach( user => {
+            user.attemptedQuiz.forEach( quiz => {
+                if( quiz.quizId._id.toString() ===  quizId ){
+                    usersAttempted.push( {
+                        firstName : user.firstName,
+                        lastName : user.lastName,
+                        quizName : quiz.quizId.name,
+                        score : quiz.score,
+                    })
+                }
+            })
         })
-        const modifiedUserData = usersAttempted.map(user => {
-            return {
-                firstName : user.firstName,
-                lastName : user.lastName,
-                quizName : user.attemptedQuiz[0].quizId.name,
-                score : user.attemptedQuiz[0].score
-            }
-        })
-        const leaderBoard = modifiedUserData.slice().sort(( user1, user2 ) => user2.score - user1.score ).slice(0,5)
+        const leaderBoard = usersAttempted.slice().sort(( user1, user2 ) => user2.score - user1.score ).slice(0,5)
         res.json({ success : true, message : "Successfully fetched leaderboard", leaderBoard })
 
     }catch( err ){
