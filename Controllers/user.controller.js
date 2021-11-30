@@ -1,5 +1,32 @@
 const { User } = require('../Models/user.model')
 
+const getLeaderBoard = async ( quizId ) => {
+    const AllUsersData = await User.find({})
+    .select('firstName lastName attemptedQuiz')
+    .populate({ 
+        path:"attemptedQuiz", 
+        populate : {
+            path : "quizId",
+        }
+    })
+
+    const usersAttempted = []
+    AllUsersData.forEach( user => {
+        user.attemptedQuiz.forEach( quiz => {
+            if( quiz.quizId._id.toString() ===  quizId ){
+                usersAttempted.push( {
+                    firstName : user.firstName,
+                    lastName : user.lastName,
+                    quizName : quiz.quizId.name,
+                    score : quiz.score,
+                })
+            }
+        })
+    })
+    const leaderBoard = usersAttempted.slice().sort(( user1, user2 ) => user2.score - user1.score ).slice(0,5)
+    return leaderBoard
+}
+
 const getUserData = async ( req , res ) => {
     try{
         const { userId } = req.user;//comes from the auth Middleware
@@ -73,29 +100,7 @@ const getLeaderBoardForQuiz = async ( req, res ) => {
     try{
         const { userId } = req.user
         const { quizId } = req.query
-        const AllUsersData = await User.find({})
-                        .select('firstName lastName attemptedQuiz')
-                        .populate({ 
-                            path:"attemptedQuiz", 
-                            populate : {
-                                path : "quizId",
-                            }
-                        })
-        
-        const usersAttempted = []
-        AllUsersData.forEach( user => {
-            user.attemptedQuiz.forEach( quiz => {
-                if( quiz.quizId._id.toString() ===  quizId ){
-                    usersAttempted.push( {
-                        firstName : user.firstName,
-                        lastName : user.lastName,
-                        quizName : quiz.quizId.name,
-                        score : quiz.score,
-                    })
-                }
-            })
-        })
-        const leaderBoard = usersAttempted.slice().sort(( user1, user2 ) => user2.score - user1.score ).slice(0,5)
+        const leaderBoard = await getLeaderBoard( quizId )
         res.json({ success : true, message : "Successfully fetched leaderboard", leaderBoard })
 
     }catch( err ){
